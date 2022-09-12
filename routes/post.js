@@ -1,9 +1,10 @@
 const express = require('express')
 const {Post,validate} = require('../model/post')
+const auth = require('../middleware/auth')
 const router = express.Router()
 
 // <==== creating post ====>
-router.post('/',async(req,res) => {
+router.post('/',auth,async(req,res) => {
     const {error} = validate(req.body)
     if(error) return res.status(400).send(error.details[0].message)
 
@@ -17,7 +18,7 @@ router.post('/',async(req,res) => {
 })
 
 // <==== updating the post ====>
-router.put("/:id",async(req,res) => {
+router.put("/:id",auth,async(req,res) => {
     const post = await Post.findById(req.params.id)
     if(post.userId === req.body.userId){
         await post.updateOne({$set:req.body})
@@ -28,7 +29,7 @@ router.put("/:id",async(req,res) => {
 })
 
 // <==== deleting post ====>
-router.delete('/:id',async(req,res) => {
+router.delete('/:id',auth,async(req,res) => {
     const {error} = validate(req.body)
     if(error) return res.status(400).send(error.details[0].message)
 
@@ -39,7 +40,7 @@ router.delete('/:id',async(req,res) => {
 })
 
 // <==== like and dislike post ====>
-router.put("/:id/like",async(req,res) => {
+router.put("/:id/like",auth,async(req,res) => {
     const post = await Post.findById(req.params.id)
     if(!post.likes.includes(req.body.userId)){
         await Post.updateOne({$push:{likes:req.body.userId}})
@@ -52,7 +53,7 @@ router.put("/:id/like",async(req,res) => {
 })
 
 // <==== commenting the post ====>
-router.put('/:id/comment',async(req,res) => {
+router.put('/:id/comment',auth,async(req,res) => {
     const post = await Post.findById(req.params.id)
     if(!post.comment.includes(req.body.userId)){
         await Post.updateOne({$push:{comment:req.body.comment}})
