@@ -1,6 +1,7 @@
 const {User,validate} = require('../model/user')
 const auth = require('../middleware/auth')
 const express = require('express')
+const bcrypt = require('bcrypt')
 const router = express.Router()
 const jwt = require('jsonwebtoken')
 const JOI = require('joi')
@@ -24,6 +25,8 @@ router.post('/register',async(req,res) => {
         email:req.body.email,
         password:req.body.password
     })
+    const salt = await bcrypt.genSalt(10)
+    user.password = await bcrypt.hash(user.password,salt)
     await user.save()
     const token = jwt.sign({_id:user._id,isAdmin:user.isAdmin},process.env.JWT_PRIVATE_KEY)
     res.header('x-token',token).send({

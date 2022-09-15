@@ -1,6 +1,7 @@
 const {User} = require('../model/user')
 const Token = require('../model/token')
 const sendMail = require('../service/mail')
+const bcrypt = require('bcrypt')
 const Joi = require('joi')
 const crypto = require('crypto')
 const express = require('express')
@@ -44,7 +45,8 @@ router.post('/:userId/:token',async(req,res) => {
             token:req.params.token
         })
         if(!token) return res.status(400).send('invalid link')
-        user.password = req.body.password
+        const salt = await bcrypt.genSalt(10)
+        user.password = await bcrypt.hash(req.body.password,salt)
         await user.save()
         await token.delete()
 
